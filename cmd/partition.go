@@ -6,6 +6,9 @@ package cmd
 
 import (
 	"fmt"
+	"os/exec"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -21,20 +24,41 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("partition called")
+		device, _ := cmd.Flags().GetString("device")
+		size, _ := cmd.Flags().GetInt("size")
+		partition(device, size)
 	},
 }
 
 func init() {
+	partitionCmd.Flags().StringP("device", "d", "", "Device to be partitioned")
+	partitionCmd.MarkFlagRequired("device")
+	partitionCmd.Flags().IntP("size", "s", 100, "Partition size in GB")
 	rootCmd.AddCommand(partitionCmd)
 
-	// Here you will define your flags and configuration settings.
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// partitionCmd.PersistentFlags().String("foo", "", "A help for foo")
+func isPartitionSizeTooBig(deviceSize, desiredSize float64) bool {
+	return deviceSize >= desiredSize
+}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// partitionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func partition(device string, size int) {
+	cmd := exec.Command("lsblk", device, "-osize", "-dn")
+	stdout, err := cmd.Output()
+
+	if err != nil {
+		panic(err)
+	}
+
+	deviceSizeStr := strings.TrimSpace(string(stdout))
+	deviceSizeStr = deviceSizeStr[:len(deviceSizeStr)-1]
+	deviceSize, err := strconv.ParseFloat(deviceSizeStr, 64)
+	if err != nil {
+		panic(err)
+	}
+	if !isPartitionSizeTooBig(deviceSize, float64(size)) {
+		panic(fmt.Errorf("partition size too big"))
+	}
+
+	fmt.Println(deviceSize)
 }
