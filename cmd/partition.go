@@ -61,4 +61,13 @@ func partition(device string, size int) {
 	}
 
 	fmt.Println(deviceSize)
+
+	cmd = exec.Command("sgdisk", "-P", "-n", fmt.Sprintf("0:-%dGiB:0", size), device, "-g")
+	stdout, err = cmd.Output()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(stdout))
 }
