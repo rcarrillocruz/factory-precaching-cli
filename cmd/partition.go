@@ -60,8 +60,6 @@ func partition(device string, size int) {
 		panic(fmt.Errorf("partition size too big"))
 	}
 
-	fmt.Println(deviceSize)
-
 	cmd = exec.Command("sgdisk", "-P", "-n", fmt.Sprintf("1:-%dGiB:0", size), device, "-g")
 	stdout, err = cmd.Output()
 
@@ -69,7 +67,18 @@ func partition(device string, size int) {
 		panic(err)
 	}
 
+	fmt.Println(string(stdout))
+
 	cmd = exec.Command("sgdisk", "-P", "-c:1:data", device)
+	stdout, err = cmd.Output()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(stdout))
+
+	cmd = exec.Command("mkfs.xfs", device)
 	stdout, err = cmd.Output()
 
 	if err != nil {
