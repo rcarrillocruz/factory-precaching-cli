@@ -5,6 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -65,14 +66,15 @@ func download(folder, release string) {
 		panic(err)
 	}
 
-	cmd := exec.Command("./oc-mirror", "-c", "imageset.yaml", "file://mirror", "--ignore-history", "--dry-run")
+	cmd := exec.Command("./oc-mirror", "-c", "imageset.yaml", "file:///"+tmpDir+"/mirror", "--ignore-history", "--dry-run")
 	_, err = cmd.Output()
 	if err != nil {
 		panic(err)
 	}
 
-	artifactsCmd := "cat mirror/oc-mirror-workspace/mapping.txt | cut -d \"=\" -f1 > artifacts.txt"
+	artifactsCmd := "cat " + tmpDir + "/mirror/oc-mirror-workspace/mapping.txt | cut -d \"=\" -f1 > artifacts.txt"
 	cmd = exec.Command("bash", "-c", artifactsCmd)
+	fmt.Println(artifactsCmd)
 	_, err = cmd.Output()
 	if err != nil {
 		panic(err)
