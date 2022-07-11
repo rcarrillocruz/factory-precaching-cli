@@ -7,6 +7,7 @@ package cmd
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -63,4 +64,18 @@ func download(folder, release string) {
 	if err != nil {
 		panic(err)
 	}
+
+	cmd := exec.Command("./oc-mirror", "-c", "imageset.yaml", "file://mirror", "--ignore-history", "--dry-run")
+	_, err = cmd.Output()
+	if err != nil {
+		panic(err)
+	}
+
+	artifactsCmd := "cat mirror/oc-mirror-workspace/mapping.txt | cut -d \"=\" -f1 > artifacts.txt"
+	cmd = exec.Command("bash", "-c", artifactsCmd)
+	_, err = cmd.Output()
+	if err != nil {
+		panic(err)
+	}
+
 }
