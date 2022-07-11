@@ -53,7 +53,7 @@ func download(folder, release string) {
 		panic(err)
 	}
 
-	f, err := os.Create(tmpDir + "imageset.yaml")
+	f, err := os.Create(tmpDir + "/imageset.yaml")
 	if err != nil {
 		panic(err)
 	}
