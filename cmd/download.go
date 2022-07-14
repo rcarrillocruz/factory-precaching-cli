@@ -6,10 +6,10 @@ package cmd
 
 import (
 	"bufio"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -89,6 +89,24 @@ func download(folder, release string) {
 	fileScanner.Split(bufio.ScanLines)
 
 	for fileScanner.Scan() {
-		fmt.Println(fileScanner.Text())
+		line := fileScanner.Text()
+		splittedArtifact := strings.Split(line, "/")
+		artifact := splittedArtifact[len(splittedArtifact)-1]
+		artifact = strings.Replace(artifact, ":", "_", 1)
+		cmd = exec.Command("skopeo", "copy", "docker://"+line, "dir://"+folder+"/"+artifact, "-q")
+		_, err := cmd.Output()
+		if err != nil {
+			panic(err)
+		}
+		cmd = exec.Command("tar", "czvf", folder+"/"+artifact+".tgz", folder+"/"+artifact)
+		_, err = cmd.Output()
+		if err != nil {
+			panic(err)
+		}
+		cmd = exec.Command("rm", "-rf", folder+"/"+artifact)
+		_, err = cmd.Output()
+		if err != nil {
+			panic(err)
+		}
 	}
 }
