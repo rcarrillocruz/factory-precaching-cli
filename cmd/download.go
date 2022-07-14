@@ -5,6 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -72,12 +73,22 @@ func download(folder, release string) {
 		panic(err)
 	}
 
-	artifactsCmd := "cat " + tmpDir + "/mirror/oc-mirror-workspace/mapping.txt | cut -d \"=\" -f1 > artifacts.txt"
+	artifactsCmd := "cat " + tmpDir + "/mirror/oc-mirror-workspace/mapping.txt | cut -d \"=\" -f1 > " + tmpDir + "/artifacts.txt"
 	cmd = exec.Command("bash", "-c", artifactsCmd)
-	fmt.Println(artifactsCmd)
 	_, err = cmd.Output()
 	if err != nil {
 		panic(err)
 	}
 
+	readFile, err := os.Open(tmpDir + "/artifacts.txt")
+	if err != nil {
+		panic(err)
+	}
+	fileScanner := bufio.NewScanner(readFile)
+
+	fileScanner.Split(bufio.ScanLines)
+
+	for fileScanner.Scan() {
+		fmt.Println(fileScanner.Text())
+	}
 }
